@@ -16,7 +16,9 @@ const sequelize = new Sequelize(
       acquire: 30000,  // Time (in ms) to wait before throwing an error
       idle: 10000,     // Time (in ms) to wait before closing an idle connection
     },
-  }
+    logging:false,
+  },
+  
 );
 sequelize.authenticate().then(
     ()=>{
