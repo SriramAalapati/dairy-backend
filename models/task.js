@@ -1,24 +1,28 @@
-const sequelize = require('./index')
-const {DataTypes} = require('sequelize')
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const Task = sequelize.define('task',{
-    id:{
-        type:DataTypes.INTEGER,
-        autoIncrement:true,
-        primaryKey:true
+const taskSchema = new Schema(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User', // Reference to the user who owns this task
+      required: true,
     },
-    userId:{
-        type:DataTypes.INTEGER,
-        allowNull:false,
+    task: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    task:{
-        type:DataTypes.STRING,
-        allowNull:false,
+    priority: {
+      type: Number,
+      required: true,
+      min: 1, // Optional: ensures priority is at least 1
     },
-    priority:{
-        type:DataTypes.INTEGER,
-        allowNull:false,
+  },
+  {
+    collection: 'tasks',
+    timestamps: true, // Adds createdAt and updatedAt
+  }
+);
 
-    }
-})
-module.exports = Task
+module.exports = mongoose.model('Task', taskSchema);

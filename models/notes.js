@@ -1,20 +1,23 @@
-const sequelize = require('./index')
-const {DataTypes} = require('sequelize')
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const Note = sequelize.define('note',{
-    id:{
-        type:DataTypes.INTEGER,
-        autoIncrement:true,
-        primaryKey:true
+const noteSchema = new Schema(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User', // reference to the user who owns the note
+      required: true,
     },
-    userId:{
-        type:DataTypes.INTEGER,
-        allowNull:false,
+    note: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    note:{
-        type:DataTypes.STRING,
-        allowNull:false,
-    },
+  },
+  {
+    collection: 'notes',
+    timestamps: true, // adds createdAt and updatedAt
+  }
+);
 
-})
-module.exports = Note
+module.exports = mongoose.model('Note', noteSchema);

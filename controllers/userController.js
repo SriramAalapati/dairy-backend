@@ -1,33 +1,64 @@
 const User = require("../models/user");
+const bcrypt = require("bcryptjs");
+// ✅ Utility for standard responses
+const sendResponse = (res, status, message, data = null, code = 200) => {
+  res.status(code).json({
+    status,
+    message,
+    data,
+  });
+};
 
-exports.addUser = async (req, res) => {
-  const { name, email } = req.body;
-  if (!name || !email) {
-    return res.status(400).json({
-      status: "failure",
-      message: "Name and email are required",
-    });
-  }
+
+// ➤ Get all users
+exports.getAllUsers = async (req, res) => {
   try {
-    const user = await User.create({ name, email });
-    res
-      .status(201)
-      .json({ status: "Success", message: "User created successfully", user });
+    const users = await User.find().select("-password"); // Exclude passwords
+    sendResponse(res, "success", "Users fetched successfully", users);
   } catch (err) {
-    res
-      .status(500)
-      .json({ status: "failure", message: "User not created", error: err });
+    sendResponse(res, "failure", `Error fetching users: ${err.message}`, null, 500);
   }
 };
 
+// ➤ Get single user by ID
 exports.getUser = async (req, res) => {
   try {
-    const user = await User.findByPk(1);
-    if(!user){
-        res.status(404).json({status:"failure",message:"User Not Found"})
-    }
-    res.status(200).json({status:"Success",message:"User fetched successfully"})
+    const { id } = req.params;
+    const user = await User.findById(id).select("-password");
+
+    if (!user) return sendResponse(res, "failure", "User not found", null, 404);
+
+    sendResponse(res, "success", "User fetched successfully", user);
   } catch (err) {
-    res.status(500).json({status:"failure",message:`Error in fetching in user ${err}`})
+    sendResponse(res, "failure", `Error fetching user: ${err.message}`, null, 500);
+  }
+};
+
+// ➤ Update user
+exports.updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const user = await User.findByIdAndUpdate(id, updates, { new: true }).select("-password");
+    if (!user) return sendResponse(res, "failure", "User not found", null, 404);
+
+    sendResponse(res, "success", "User updated successfully", user);
+  } catch (err) {
+    sendResponse(res, "failure", `Error updating user: ${err.message}`, null, 500);
+  }
+};
+
+// ➤ Delete user
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+
+    if (!user) return sendResponse(res, "failure", "User not found", null, 404);
+
+    sendResponse(res, "success", "User deleted successfully");
+  } catch (err) {
+    sendResponse(res, "failure", `Error deleting user: ${err.message}`, null, 500);
   }
 };

@@ -1,69 +1,32 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('./index'); 
-const User = require('./user'); 
+const mongoose = require("mongoose");
 
-const Loan = sequelize.define('Loan', {
-    id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-        allowNull: false,
+const loanSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    
-    // Core Details
-    lenderName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
+    lenderName: { type: String, required: true },
     lenderType: {
-        type: DataTypes.ENUM('Bank', 'Person', 'Other'),
-        allowNull: false,
-        defaultValue: 'Other',
+      type: String,
+      enum: ["Bank", "Person", "Other"],
+      default: "Other",
     },
-    amount: {
-        type: DataTypes.DECIMAL(10, 2), // Principal amount
-        allowNull: false,
-    },
-    interestRate: {
-        type: DataTypes.DECIMAL(5, 2), // Annual rate (e.g., 5.5)
-        allowNull: false,
-        defaultValue: 0.00,
-    },
-    
-    // Dates
-    takenDate: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
-    },
-    dueDate: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-    },
-    paidOffDate: {
-        type: DataTypes.DATEONLY, // Date the loan was fully paid
-        allowNull: true,
-    },
-
-    // Status & Notes
-    repaymentTerms: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
+    amount: { type: Number, required: true },
+    interestRate: { type: Number, default: 0 },
+    takenDate: { type: Date, default: Date.now },
+    dueDate: { type: Date },
+    paidOffDate: { type: Date },
+    repaymentTerms: { type: String },
     status: {
-        type: DataTypes.ENUM('Active', 'Paid Off', 'Default', 'Pending'),
-        allowNull: false,
-        defaultValue: 'Active',
+      type: String,
+      enum: ["Active", "Paid Off", "Default", "Pending"],
+      default: "Active",
     },
-    notes: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-}, {
-    tableName: 'loans',
-    timestamps: true,
-});
+    notes: { type: String },
+  },
+  { timestamps: true }
+);
 
-Loan.belongsTo(User, { foreignKey: 'userId', as: 'owner' });
-
-module.exports = Loan;
+module.exports = mongoose.model("Loan", loanSchema);
